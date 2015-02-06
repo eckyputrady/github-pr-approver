@@ -1,0 +1,8 @@
+{
+  "name": "github-pr-approver",
+  "version": "0.0.0",
+  "dependencies": {
+    "ramda": "0.9.1"  
+  },
+  "devDependencies": {}
+}
