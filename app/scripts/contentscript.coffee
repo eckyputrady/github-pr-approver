@@ -2,10 +2,6 @@
 
 R = require('ramda')
 
-href = window.location.href
-isPRs = href.indexOf('/pulls') >= 0
-isPRDetail = href.indexOf('/pull/') >= 0
-
 ## .. Model type ..
 # CommentData :: { username: Str, userid: Str, isApprove: Bool }
 # Comment :: Maybe CommentData
@@ -62,7 +58,8 @@ PRD_ui = (elem, models) ->
   item
 
 ## .. UI Function for PR list ..
-augmentPRList = (comments) -> null
+augmentPRList = (elem, comments) -> 
+  console.log('PR List!')
 
 ## Utitlities UI Func
 getProfpicUrl = (size, userid) -> 'https://avatars2.githubusercontent.com/u/' + userid + '?v=3&s=' + size;
@@ -72,4 +69,13 @@ getProfpicUrl = (size, userid) -> 'https://avatars2.githubusercontent.com/u/' + 
 
 model = parsePR(document)
 console.log(model)
-augmentPRdetail(document, model)
+
+href = window.location.href
+isPRs = href.indexOf('/pulls') >= 0
+isPRDetail = href.indexOf('/pull/') >= 0
+if isPRs
+  augmentPRList(document, model)
+else if isPRDetail
+  augmentPRdetail(document, model)
+else
+  console.log('Ooops! I dont know how to handle ' + href)

@@ -5,12 +5,6 @@
 
   R = require('ramda');
 
-  href = window.location.href;
-
-  isPRs = href.indexOf('/pulls') >= 0;
-
-  isPRDetail = href.indexOf('/pull/') >= 0;
-
   parsePR = function(elem) {
     var comments, commentsAfterLatestCommit, onlyApproveComments, timeline;
     timeline = getTimeline();
@@ -97,8 +91,8 @@
     return item;
   };
 
-  augmentPRList = function(comments) {
-    return null;
+  augmentPRList = function(elem, comments) {
+    return console.log('PR List!');
   };
 
   getProfpicUrl = function(size, userid) {
@@ -109,7 +103,19 @@
 
   console.log(model);
 
-  augmentPRdetail(document, model);
+  href = window.location.href;
+
+  isPRs = href.indexOf('/pulls') >= 0;
+
+  isPRDetail = href.indexOf('/pull/') >= 0;
+
+  if (isPRs) {
+    augmentPRList(document, model);
+  } else if (isPRDetail) {
+    augmentPRdetail(document, model);
+  } else {
+    console.log('Ooops! I dont know how to handle ' + href);
+  }
 
 }).call(this);
 
