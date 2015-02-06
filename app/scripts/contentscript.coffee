@@ -1,22 +1,24 @@
 'use strict';
 
 R = require('ramda')
+$ = require('jquery')
 
 ## .. Model type ..
 # CommentData :: { username: Str, userid: Str, isApprove: Bool }
 # Comment :: Maybe CommentData
+# Excerpt :: { id: Str, url: Str, cmt: [Comment] }
 
 # :: Element -> [Comment]
 # Parse an element containing PR detail into a list of comment that is approving the PR
-parsePR = (elem) -> 
-  timeline = getTimeline()
+parsePRD = (elem) -> 
+  timeline = getTimeline(elem)
   comments = R.map(parseComment, timeline)
-  commentsAfterLatestCommit = R.foldl(((acc, x) -> if not x then acc else [].concat(acc)), [], comments)
+  commentsAfterLatestCommit = R.foldl(((acc, x) -> if not x then [] else [x].concat(acc)), [], comments)
   onlyApproveComments = R.filter(((x) -> x.isApprove), commentsAfterLatestCommit)
 
 commentSelector = '.timeline-comment-wrapper:not(.timeline-new-comment)'
 commitSelector = '.discussion-commits'
-getTimeline = () -> document.querySelectorAll(R.join(', ', [commentSelector, commitSelector]))
+getTimeline = (elem) -> elem.querySelectorAll(R.join(', ', [commentSelector, commitSelector]))
 isCommentElem = (elem) -> elem.classList.contains('timeline-comment-wrapper')
 parseComment = (elem) ->
   if not isCommentElem(elem)
@@ -29,12 +31,31 @@ parseComment = (elem) ->
       isApprove: comment.indexOf('+1') >= 0
     }
 
+# :: Element -> [Excerpt]
+# Parse an element containing PR list into a list of Excerpt
+parsePRL = (elem) -> 
+  R.map(parseExcerpt, getIssuesElem(elem))
+
+getIssuesElem = (elem) -> elem.querySelectorAll('div.issues-listing > ul > li')
+getIssueId = (elem) -> elem.getAttribute('data-issue-id')
+getIssueUrl = (elem) -> elem.querySelector('.issue-title > a').getAttribute('href')
+parseExcerpt = (elem) -> 
+  url = getIssueUrl(elem)
+  issueId = getIssueId(elem)
+  getUrl = () -> $.get(url)
+  stringToElement = (str) -> (new DOMParser()).parseFromString(str, 'text/html')
+  retry(getUrl).then(stringToElement).then(parsePRD).then((cmt) -> { id: issueId, url: url, cmt: cmt })
+retry = (pFunc) ->
+  pFunc()
+
 
 ## .. UI Function for PR detail ..
-# :: elem, [Comment] -> ()
-augmentPRdetail = (elem, comments) ->
+# :: Element, [Comment] -> ()
+augmentPRD = (elem, comments) ->
   c = PRD_getBaseContainer(elem)
   c.insertBefore(PRD_ui(elem, comments), c.firstChild)
+checkPRDFinishCond = (elem) ->
+  elem.querySelectorAll('#partial-users-approvers').length > 0
 
 PRD_getBaseContainer = (elem) -> elem.querySelector('div.discussion-sidebar')
 PRD_getBaseItem = (elem) -> elem.querySelector('div#partial-users-participants')
@@ -58,24 +79,60 @@ PRD_ui = (elem, models) ->
   item
 
 ## .. UI Function for PR list ..
-augmentPRList = (elem, comments) -> 
-  console.log('PR List!')
+# :: Element, [Excerpt] -> ()
+augmentPRL = (elem, excerpts) -> 
+  applyEffect = (excerptPromise) ->
+    excerptPromise.then(augmentPRLItem(elem))
+  R.forEach(applyEffect, excerpts)
+checkPRLFinishCond = (elem) ->
+  elem.querySelectorAll('#PRL_ui').length > 0
 
-## Utitlities UI Func
+augmentPRLItem = R.curry((elem, excerpt) ->
+  container = PRL_getContainer(elem, excerpt)
+  container.setAttribute('style', 'width:32px')
+  container.innerHTML = PRL_icon(excerpt)
+)
+PRL_getContainer = (elem, excerpt) -> 
+  elem.querySelector('li#issue_' + excerpt.id).querySelector('div.table-list-cell-avatar')
+PRL_icon = (excerpt) ->
+  """
+  <a id="PRL_ui" href="#{excerpt.url}" aria-label="#{PRL_wording(excerpt)}" class="muted-link tooltipped tooltipped-e">
+    <span class="octicon octicon-check"></span> #{excerpt.cmt.length}
+  </a>
+  """ 
+PRL_wording = (excerpt) ->
+  len = excerpt.cmt.length
+  getUsername = (x) -> x.username
+  names = R.take(2, R.map(getUsername, excerpt.cmt))
+  if len <= 0
+    'Nobody has approved this PR yet'
+  else if len <= 2
+    R.join(' and ', names) + ' has approved this PR'
+  else
+    R.join(', ', names) + 'and ' + (len-2) + ' others has approved this PR'
+
+
+## Utilities UI Func
 getProfpicUrl = (size, userid) -> 'https://avatars2.githubusercontent.com/u/' + userid + '?v=3&s=' + size;
 
 
 ## main
+lastHref = null
+main = () ->
+  href = window.location.href
+  isPRL = href.indexOf('/pulls') >= 0
+  isPRD = href.indexOf('/pull/') >= 0
+  if isPRL
+    PRL(document)
+  else if isPRD
+    PRD(document)
+  else
+    console.log('Ooops! I dont know how to handle ' + href)
 
-model = parsePR(document)
-console.log(model)
+PRL = (elem) ->
+  augmentPRL(elem, parsePRL(elem)) if not checkPRLFinishCond(elem)
+PRD = (elem) ->
+  augmentPRD(elem, parsePRD(elem)) if not checkPRDFinishCond(elem)
 
-href = window.location.href
-isPRs = href.indexOf('/pulls') >= 0
-isPRDetail = href.indexOf('/pull/') >= 0
-if isPRs
-  augmentPRList(document, model)
-else if isPRDetail
-  augmentPRdetail(document, model)
-else
-  console.log('Ooops! I dont know how to handle ' + href)
+setInterval(main, 3000)
+main()

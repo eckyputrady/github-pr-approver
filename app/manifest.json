@@ -17,8 +17,7 @@
     "content_scripts": [
         {
             "matches": [
-                "*://*.github.com/*/pulls",
-                "*://*.github.com/*/pull/*"
+                "*://*.github.com/*"
             ],
             "css": [
                 "styles/main.css"
