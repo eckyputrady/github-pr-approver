@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
   'use strict';
-  var R, approver, avatar, baseAvatar, baseItem, commentAndCommitElems, commentAndCommitModels, commentSelector, commitSelector, containClasses, container, foldF, getProfpicUrl, href, isComment, isCommit, isPRDetail, isPRs, parseComment, test2, updateApprovers;
+  var PRD_avatar, PRD_getBaseAvatar, PRD_getBaseContainer, PRD_getBaseItem, PRD_ui, R, augmentPRList, augmentPRdetail, commentSelector, commitSelector, getProfpicUrl, getTimeline, href, isCommentElem, isPRDetail, isPRs, model, parseComment, parsePR;
 
   R = require('ramda');
 
@@ -11,27 +11,37 @@
 
   isPRDetail = href.indexOf('/pull/') >= 0;
 
+  parsePR = function(elem) {
+    var comments, commentsAfterLatestCommit, onlyApproveComments, timeline;
+    timeline = getTimeline();
+    comments = R.map(parseComment, timeline);
+    commentsAfterLatestCommit = R.foldl((function(acc, x) {
+      if (!x) {
+        return acc;
+      } else {
+        return [].concat(acc);
+      }
+    }), [], comments);
+    return onlyApproveComments = R.filter((function(x) {
+      return x.isApprove;
+    }), commentsAfterLatestCommit);
+  };
+
   commentSelector = '.timeline-comment-wrapper:not(.timeline-new-comment)';
 
   commitSelector = '.discussion-commits';
 
-  commentAndCommitElems = function() {
+  getTimeline = function() {
     return document.querySelectorAll(R.join(', ', [commentSelector, commitSelector]));
   };
 
-  containClasses = R.curry(function(xs, elem) {
-    return R.all((function(x) {
-      return elem.classList.contains(x);
-    }), xs);
-  });
-
-  isComment = containClasses(['timeline-comment-wrapper']);
-
-  isCommit = containClasses(['discussion-commits']);
+  isCommentElem = function(elem) {
+    return elem.classList.contains('timeline-comment-wrapper');
+  };
 
   parseComment = function(elem) {
     var comment;
-    if (!isComment(elem)) {
+    if (!isCommentElem(elem)) {
       return null;
     } else {
       comment = elem.querySelector('div.comment-body.js-comment-body').innerHTML;
@@ -43,49 +53,39 @@
     }
   };
 
-  foldF = function(acc, val) {
-    if (!val) {
-      return acc;
-    } else if (!val.isApprove) {
-      return acc;
-    } else {
-      acc.push(val);
-      return acc;
-    }
+  augmentPRdetail = function(elem, comments) {
+    var c;
+    c = PRD_getBaseContainer(elem);
+    return c.insertBefore(PRD_ui(elem, comments), c.firstChild);
   };
 
-  getProfpicUrl = function(size, userid) {
-    return 'https://avatars2.githubusercontent.com/u/' + userid + '?v=3&s=' + size;
+  PRD_getBaseContainer = function(elem) {
+    return elem.querySelector('div.discussion-sidebar');
   };
 
-  baseItem = function() {
-    return document.querySelector('div#partial-users-participants');
+  PRD_getBaseItem = function(elem) {
+    return elem.querySelector('div#partial-users-participants');
   };
 
-  container = function() {
-    return document.querySelector('div.discussion-sidebar');
+  PRD_getBaseAvatar = function(elem) {
+    return elem.querySelector('a.participant-avatar');
   };
 
-  baseAvatar = function(item) {
-    return item.querySelector('a.participant-avatar');
-  };
-
-  avatar = R.curry(function(item, model) {
+  PRD_avatar = R.curry(function(elem, model) {
     var ret;
-    console.log(item);
-    ret = baseAvatar(item).cloneNode(true);
+    ret = PRD_getBaseAvatar(elem).cloneNode(true);
     ret.setAttribute('aria-label', model.username);
     ret.setAttribute('href', '/' + model.username);
     ret.querySelector('img').setAttribute('src', getProfpicUrl(40, model.userid));
     return ret;
   });
 
-  approver = function(models) {
+  PRD_ui = function(elem, models) {
     var avatarContainer, avatarUI, avatars, item, _i, _len;
-    item = baseItem().cloneNode(true);
+    item = PRD_getBaseItem(elem).cloneNode(true);
     item.setAttribute('id', 'partial-users-approvers');
     item.querySelector('h3').innerHTML = models.length + ' approvers';
-    avatars = R.map(avatar(item), models);
+    avatars = R.map(PRD_avatar(item), models);
     avatarContainer = item.querySelector('div.participation-avatars');
     while (avatarContainer.firstChild) {
       avatarContainer.removeChild(avatarContainer.firstChild);
@@ -97,19 +97,19 @@
     return item;
   };
 
-  updateApprovers = function(models) {
-    var c;
-    c = container();
-    return c.insertBefore(approver(models), c.firstChild);
+  augmentPRList = function(comments) {
+    return null;
   };
 
-  commentAndCommitModels = R.map(parseComment, commentAndCommitElems());
+  getProfpicUrl = function(size, userid) {
+    return 'https://avatars2.githubusercontent.com/u/' + userid + '?v=3&s=' + size;
+  };
 
-  test2 = R.foldl(foldF, [], commentAndCommitModels);
+  model = parsePR(document);
 
-  console.log(test2);
+  console.log(model);
 
-  updateApprovers(test2);
+  augmentPRdetail(document, model);
 
 }).call(this);
 

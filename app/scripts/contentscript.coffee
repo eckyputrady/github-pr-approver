@@ -6,16 +6,24 @@ href = window.location.href
 isPRs = href.indexOf('/pulls') >= 0
 isPRDetail = href.indexOf('/pull/') >= 0
 
+## .. Model type ..
+# CommentData :: { username: Str, userid: Str, isApprove: Bool }
+# Comment :: Maybe CommentData
+
+# :: Element -> [Comment]
+# Parse an element containing PR detail into a list of comment that is approving the PR
+parsePR = (elem) -> 
+  timeline = getTimeline()
+  comments = R.map(parseComment, timeline)
+  commentsAfterLatestCommit = R.foldl(((acc, x) -> if not x then acc else [].concat(acc)), [], comments)
+  onlyApproveComments = R.filter(((x) -> x.isApprove), commentsAfterLatestCommit)
+
 commentSelector = '.timeline-comment-wrapper:not(.timeline-new-comment)'
 commitSelector = '.discussion-commits'
-
-commentAndCommitElems = () -> document.querySelectorAll(R.join(', ', [commentSelector, commitSelector]))
-containClasses = R.curry((xs, elem) -> R.all(((x) -> elem.classList.contains(x)), xs)) 
-isComment = containClasses(['timeline-comment-wrapper'])
-isCommit = containClasses(['discussion-commits'])
-
+getTimeline = () -> document.querySelectorAll(R.join(', ', [commentSelector, commitSelector]))
+isCommentElem = (elem) -> elem.classList.contains('timeline-comment-wrapper')
 parseComment = (elem) ->
-  if not isComment(elem)
+  if not isCommentElem(elem)
     null
   else
     comment = elem.querySelector('div.comment-body.js-comment-body').innerHTML
@@ -25,45 +33,43 @@ parseComment = (elem) ->
       isApprove: comment.indexOf('+1') >= 0
     }
 
-foldF = (acc, val) ->
-  if not val
-    []
-  else if not val.isApprove
-    acc
-  else
-    acc.push(val)
-    acc
 
-getProfpicUrl = (size, userid) -> 'https://avatars2.githubusercontent.com/u/' + userid + '?v=3&s=' + size;
-baseItem = () -> document.querySelector('div#partial-users-participants')
-container = () -> document.querySelector('div.discussion-sidebar')
-baseAvatar = (item) -> item.querySelector('a.participant-avatar')
-avatar = R.curry((item, model) -> 
-  console.log(item)
-  ret = baseAvatar(item).cloneNode(true)
+## .. UI Function for PR detail ..
+# :: elem, [Comment] -> ()
+augmentPRdetail = (elem, comments) ->
+  c = PRD_getBaseContainer(elem)
+  c.insertBefore(PRD_ui(elem, comments), c.firstChild)
+
+PRD_getBaseContainer = (elem) -> elem.querySelector('div.discussion-sidebar')
+PRD_getBaseItem = (elem) -> elem.querySelector('div#partial-users-participants')
+PRD_getBaseAvatar = (elem) -> elem.querySelector('a.participant-avatar')
+PRD_avatar = R.curry((elem, model) -> 
+  ret = PRD_getBaseAvatar(elem).cloneNode(true)
   ret.setAttribute('aria-label', model.username)
   ret.setAttribute('href', '/' + model.username)
   ret.querySelector('img').setAttribute('src', getProfpicUrl(40, model.userid))
   ret
 )
-approver = (models) ->
-  item = baseItem().cloneNode(true)
+PRD_ui = (elem, models) ->
+  item = PRD_getBaseItem(elem).cloneNode(true)
   item.setAttribute('id', 'partial-users-approvers')
   item.querySelector('h3').innerHTML = models.length + ' approvers'
   
-  avatars = R.map(avatar(item), models)
+  avatars = R.map(PRD_avatar(item), models)
   avatarContainer = item.querySelector('div.participation-avatars')
   avatarContainer.removeChild(avatarContainer.firstChild) while (avatarContainer.firstChild)
   avatarContainer.appendChild(avatarUI) for avatarUI in avatars
   item
 
-updateApprovers = (models) ->
-  c = container()
-  c.insertBefore(approver(models), c.firstChild)
+## .. UI Function for PR list ..
+augmentPRList = (comments) -> null
 
-commentAndCommitModels = R.map(parseComment, commentAndCommitElems())
+## Utitlities UI Func
+getProfpicUrl = (size, userid) -> 'https://avatars2.githubusercontent.com/u/' + userid + '?v=3&s=' + size;
 
-test2 = R.foldl(foldF, [], commentAndCommitModels)
 
-console.log(test2);
-updateApprovers(test2)
+## main
+
+model = parsePR(document)
+console.log(model)
+augmentPRdetail(document, model)

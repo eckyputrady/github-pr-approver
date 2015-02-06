@@ -338,10 +338,10 @@ module.exports = function (grunt) {
 
   grunt.registerTask('debug', function () {
     grunt.task.run([
-      'jshint',
       'concurrent:chrome',
       'connect:chrome',
       'browserify:chrome',
+      // 'jshint',
       'watch'
     ]);
   });
