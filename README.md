@@ -20,3 +20,7 @@ Approve pull request by commenting with the following keywords/emoji:
 1. Click here and install.
 2. The extension works when you open Github ;)
 
+## License
+
+[GNU GPL v2.0](LICENSE)
+
