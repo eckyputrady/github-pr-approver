@@ -245,15 +245,15 @@ module.exports = function (grunt) {
     //     }
     //   }
     // },
-    // uglify: {
-    //   dist: {
-    //     files: {
-    //       '<%= config.dist %>/scripts/scripts.js': [
-    //         '<%= config.dist %>/scripts/scripts.js'
-    //       ]
-    //     }
-    //   }
-    // },
+    uglify: {
+      dist: {
+        files: {
+            '<%= config.dist %>/scripts/contentscript-final.js': [
+            '<%= config.dist %>/scripts/contentscript-final.js'
+          ]
+        }
+      }
+    },
     // concat: {
     //   dist: {}
     // },
@@ -280,6 +280,10 @@ module.exports = function (grunt) {
 
     browserify: {
       chrome: {
+        src: '<%= config.app %>/scripts/contentscript.js',
+        dest: '<%= config.app %>/scripts/contentscript-final.js'
+      },
+      dist: {
         src: '<%= config.app %>/scripts/contentscript.js',
         dest: '<%= config.app %>/scripts/contentscript-final.js'
       }
@@ -358,16 +362,17 @@ module.exports = function (grunt) {
     'concurrent:dist',
     // No UI feature selected, cssmin task will be commented
     // 'cssmin',
+    'browserify:dist',
     'concat',
-    'uglify',
     'copy',
     'usemin',
+    'uglify',
     'compress'
   ]);
 
   grunt.registerTask('default', [
-    'jshint',
-    'test',
+    // 'jshint',
+    // 'test',
     'build'
   ]);
 };
