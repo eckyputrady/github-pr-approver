@@ -11,7 +11,7 @@ approveWords = [
 ]
 
 ## .. Model type ..
-# CommentData :: { username: Str, userid: Str, isApprove: Bool }
+# CommentData :: { elem: Element, username: Str, userid: Str, isApprove: Bool }
 # Comment :: Maybe CommentData
 # Excerpt :: { id: Str, url: Str, cmt: [Comment] }
 
@@ -33,8 +33,9 @@ parseComment = (elem) ->
   else
     comment = elem.querySelector('div.comment-body.js-comment-body').innerHTML
     {
-      username: elem.querySelector('a').getAttribute('href').substr(1),
-      userid: elem.querySelector('a > img').getAttribute('data-user'),
+      elem: elem
+      username: elem.querySelector('a').getAttribute('href').substr(1)
+      userid: elem.querySelector('a > img').getAttribute('data-user')
       isApprove: isApprove(comment.toLowerCase())
     }
 isApprove = (comment) ->
@@ -64,8 +65,21 @@ retry = (pFunc) ->
 augmentPRD = (elem, comments) ->
   c = PRD_getBaseContainer(elem)
   c.insertBefore(PRD_ui(elem, comments), c.firstChild)
+  R.forEach(augmentComment, comments)
 checkPRDFinishCond = (elem) ->
   elem.querySelectorAll('#partial-users-approves').length > 0
+augmentComment = (comment) ->
+  msg = "#{comment.username} approves this PR via this comment"
+  comment.elem.querySelector('div.timeline-comment-header-text').innerHTML += 
+    """
+    <span class="issue-pr-status">
+      <div>
+        <a class="status status-success tooltipped tooltipped-e" aria-label="#{msg}">
+          <span class="octicon octicon-check"></span>
+        </a>
+      </div>
+    </span>
+    """
 
 PRD_getBaseContainer = (elem) -> elem.querySelector('div.discussion-sidebar')
 PRD_getBaseItem = (elem) -> elem.querySelector('div#partial-users-participants')
