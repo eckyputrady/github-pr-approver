@@ -1,8 +1,8 @@
 {
-    "name": "__MSG_appName__",
-    "version": "0.0.12",
+    "name": "Github Code Review",
+    "version": "0.1.0",
     "manifest_version": 2,
-    "description": "__MSG_appDescription__",
+    "description": "Github Code Review is a Chrome extension that lets you do code review easily on top of github pull request",
     "icons": {
         "16": "images/icon-16.png",
         "128": "images/icon-128.png"
