@@ -85,7 +85,7 @@
   };
 
   retry = function(pFunc) {
-    return pFunc();
+    return pFunc().fail(pFunc).fail(pFunc).fail(pFunc);
   };
 
   augmentPRD = function(elem, comments) {

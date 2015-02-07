@@ -46,7 +46,7 @@ parseExcerpt = (elem) ->
   stringToElement = (str) -> (new DOMParser()).parseFromString(str, 'text/html')
   retry(getUrl).then(stringToElement).then(parsePRD).then((cmt) -> { id: issueId, url: url, cmt: cmt })
 retry = (pFunc) ->
-  pFunc()
+  pFunc().fail(pFunc).fail(pFunc).fail(pFunc)
 
 
 ## .. UI Function for PR detail ..
