@@ -2,6 +2,13 @@
 
 R = require('ramda')
 $ = require('jquery')
+approveWords = [
+  ':+1:'
+  ':shipit:'
+  'verified'
+  'next ma jo'
+  'approve'
+]
 
 ## .. Model type ..
 # CommentData :: { username: Str, userid: Str, isApprove: Bool }
@@ -28,8 +35,11 @@ parseComment = (elem) ->
     {
       username: elem.querySelector('a').getAttribute('href').substr(1),
       userid: elem.querySelector('a > img').getAttribute('data-user'),
-      isApprove: comment.indexOf('+1') >= 0
+      isApprove: isApprove(comment.toLowerCase())
     }
+isApprove = (comment) ->
+  f = (x) -> comment.indexOf(x) >= 0
+  R.any(f, approveWords)
 
 # :: Element -> [Excerpt]
 # Parse an element containing PR list into a list of Excerpt

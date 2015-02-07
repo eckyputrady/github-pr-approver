@@ -1,10 +1,12 @@
 (function() {
   'use strict';
-  var $, PRD, PRD_avatar, PRD_getBaseAvatar, PRD_getBaseContainer, PRD_getBaseItem, PRD_ui, PRL, PRL_getContainer, PRL_icon, PRL_wording, R, augmentPRD, augmentPRL, augmentPRLItem, checkPRDFinishCond, checkPRLFinishCond, commentSelector, commitSelector, getIssueId, getIssueUrl, getIssuesElem, getProfpicUrl, getTimeline, isCommentElem, lastHref, main, parseComment, parseExcerpt, parsePRD, parsePRL, retry;
+  var $, PRD, PRD_avatar, PRD_getBaseAvatar, PRD_getBaseContainer, PRD_getBaseItem, PRD_ui, PRL, PRL_getContainer, PRL_icon, PRL_wording, R, approveWords, augmentPRD, augmentPRL, augmentPRLItem, checkPRDFinishCond, checkPRLFinishCond, commentSelector, commitSelector, getIssueId, getIssueUrl, getIssuesElem, getProfpicUrl, getTimeline, isApprove, isCommentElem, lastHref, main, parseComment, parseExcerpt, parsePRD, parsePRL, retry;
 
   R = require('ramda');
 
   $ = require('jquery');
+
+  approveWords = [':+1:', ':shipit:', 'verified', 'next ma jo', 'approve'];
 
   parsePRD = function(elem) {
     var comments, commentsAfterLatestCommit, onlyApproveComments, timeline;
@@ -43,9 +45,17 @@
       return {
         username: elem.querySelector('a').getAttribute('href').substr(1),
         userid: elem.querySelector('a > img').getAttribute('data-user'),
-        isApprove: comment.indexOf('+1') >= 0
+        isApprove: isApprove(comment.toLowerCase())
       };
     }
+  };
+
+  isApprove = function(comment) {
+    var f;
+    f = function(x) {
+      return comment.indexOf(x) >= 0;
+    };
+    return R.any(f, approveWords);
   };
 
   parsePRL = function(elem) {
