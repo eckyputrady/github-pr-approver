@@ -1,5 +1,7 @@
 # Github Code Review
 
+![icon](app/images/icon.png)
+
 Code review becomes easier with Github Code Review.
 
 Github Code Review is a Chrome Extension that act as a lightweight code review tool on top of Github Pull Request. It let's you see who has approved each pull request easily.
