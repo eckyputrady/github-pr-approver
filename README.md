@@ -1,6 +1,8 @@
 # Github Code Review
 
-![icon](app/images/icon.png)
+![icon](app/images/icon-128.png)
+
+## Overview
 
 Code review becomes easier with Github Code Review.
 
@@ -32,3 +34,6 @@ Approve count information for each Pull Request:
 
 [GNU GPL v2.0](LICENSE)
 
+## Credits
+
+1. App's icon is created Christopher Holm-Hansen from the Noun Project
