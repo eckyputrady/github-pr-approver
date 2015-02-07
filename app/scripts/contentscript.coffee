@@ -79,8 +79,8 @@ PRD_avatar = R.curry((elem, model) ->
 )
 PRD_ui = (elem, models) ->
   item = PRD_getBaseItem(elem).cloneNode(true)
-  item.setAttribute('id', 'partial-users-approvers')
-  item.querySelector('h3').innerHTML = models.length + ' approvers'
+  item.setAttribute('id', 'partial-users-approves')
+  item.querySelector('h3').innerHTML = models.length + ' approves'
   
   avatars = R.map(PRD_avatar(item), models)
   avatarContainer = item.querySelector('div.participation-avatars')
