@@ -13,7 +13,7 @@
                 "*://*.github.com/*"
             ],
             "js": [
-                "scripts/contentscript-final.js"
+                "scripts/contentscript.js"
             ],
             "run_at": "document_end",
             "all_frames": false
