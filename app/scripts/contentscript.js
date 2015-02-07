@@ -104,7 +104,7 @@
   };
 
   checkPRDFinishCond = function(elem) {
-    return elem.querySelectorAll('#partial-users-approvers').length > 0;
+    return elem.querySelectorAll('#partial-users-approves').length > 0;
   };
 
   PRD_getBaseContainer = function(elem) {

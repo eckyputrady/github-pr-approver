@@ -65,7 +65,7 @@ augmentPRD = (elem, comments) ->
   c = PRD_getBaseContainer(elem)
   c.insertBefore(PRD_ui(elem, comments), c.firstChild)
 checkPRDFinishCond = (elem) ->
-  elem.querySelectorAll('#partial-users-approvers').length > 0
+  elem.querySelectorAll('#partial-users-approves').length > 0
 
 PRD_getBaseContainer = (elem) -> elem.querySelector('div.discussion-sidebar')
 PRD_getBaseItem = (elem) -> elem.querySelector('div#partial-users-participants')
