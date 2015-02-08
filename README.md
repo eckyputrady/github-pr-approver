@@ -27,7 +27,7 @@ Approve count information for each Pull Request:
 
 ## How To Install
 
-1. Click here and install.
+1. Install from [Chrome Webstore](https://chrome.google.com/webstore/detail/github-code-review/pgdgcfbmpimnnafmejbbgodlijodgppk)
 2. The extension works when you open Github ;)
 
 ## License
@@ -37,3 +37,17 @@ Approve count information for each Pull Request:
 ## Credits
 
 1. App's icon is created Christopher Holm-Hansen from the Noun Project
+
+## Developer's Guide
+
+1. Setup the project
+```
+cd <project folder>
+npm install
+gulp
+```
+2. Open [Chrome Extensions menu](chrome://extensions/) using Google Chrome
+3. Tick "Developer mode"
+4. Click "Load Unpacked Extension" and choose `dist` folder
+5. Run `gulp` and refresh Chrome Extensions menu if you change anything in the code
+6. If you ready to publish the app, run `gulp prod` and get the `.zip` file under `package` folder
